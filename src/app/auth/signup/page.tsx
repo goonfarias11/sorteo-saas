@@ -39,6 +39,7 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        console.error("Error al registrar:", data);
         toast.error(data.error || "Error al crear la cuenta");
         return;
       }
@@ -46,6 +47,7 @@ export default function SignUpPage() {
       toast.success("Cuenta creada exitosamente");
       router.push("/auth/signin");
     } catch (error) {
+      console.error("Error completo:", error);
       toast.error("Error al crear la cuenta");
     } finally {
       setLoading(false);
@@ -74,7 +76,7 @@ export default function SignUpPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-gray-900 placeholder-gray-400"
                 placeholder="Tu nombre"
                 required
               />
@@ -91,7 +93,7 @@ export default function SignUpPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-gray-900 placeholder-gray-400"
                 placeholder="tu@email.com"
                 required
               />
@@ -108,7 +110,7 @@ export default function SignUpPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-gray-900 placeholder-gray-400"
                 placeholder="••••••••"
                 required
                 minLength={6}
@@ -126,7 +128,7 @@ export default function SignUpPage() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-gray-900 placeholder-gray-400"
                 placeholder="••••••••"
                 required
                 minLength={6}
