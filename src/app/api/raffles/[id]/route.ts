@@ -6,11 +6,12 @@ import { prisma } from "@/lib/prisma";
 // GET - Obtener detalles de un sorteo
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const raffle = await prisma.raffle.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -52,9 +53,10 @@ export async function GET(
 // PUT - Actualizar sorteo (solo admin)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
@@ -67,7 +69,7 @@ export async function PUT(
     const body = await request.json();
 
     const raffle = await prisma.raffle.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...body,
         startDate: body.startDate ? new Date(body.startDate) : undefined,
@@ -88,9 +90,10 @@ export async function PUT(
 // DELETE - Eliminar sorteo (solo admin)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
@@ -101,7 +104,7 @@ export async function DELETE(
     }
 
     await prisma.raffle.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: "Sorteo eliminado" });

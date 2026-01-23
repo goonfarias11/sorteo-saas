@@ -7,9 +7,10 @@ import { executeRaffle, validateRaffleExecution } from "@/lib/raffle-algorithm";
 // POST - Ejecutar sorteo (solo admin)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
@@ -21,7 +22,7 @@ export async function POST(
 
     // Obtener sorteo con participantes
     const raffle = await prisma.raffle.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         participants: {
           include: {
@@ -68,7 +69,7 @@ export async function POST(
         await tx.winner.create({
           data: {
             userId: result.winners[i].userId,
-            raffleId: params.id,
+            raffleId: id,
             position: i + 1,
           },
         });
@@ -76,7 +77,7 @@ export async function POST(
 
       // Actualizar sorteo
       await tx.raffle.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           status: "FINISHED",
           executedAt: result.executedAt,

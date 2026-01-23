@@ -6,9 +6,10 @@ import { prisma } from "@/lib/prisma";
 // GET - Exportar participantes a CSV (solo admin)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+      const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
@@ -19,7 +20,7 @@ export async function GET(
     }
 
     const raffle = await prisma.raffle.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         participants: {
           include: {

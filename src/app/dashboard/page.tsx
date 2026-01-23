@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Calendar, Users, Gift, Clock } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -73,9 +74,11 @@ export default function DashboardPage() {
           {raffles.map((raffle) => (
             <div key={raffle.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
               {raffle.imageUrl && (
-                <img
+                <Image
                   src={raffle.imageUrl}
                   alt={raffle.title}
+                                    width={600}
+                                    height={192}
                   className="w-full h-48 object-cover"
                 />
               )}

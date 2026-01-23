@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { Trophy, Calendar, Gift } from "lucide-react";
 import toast from "react-hot-toast";
@@ -37,13 +37,7 @@ export default function HistoryPage() {
   const [wins, setWins] = useState<Win[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      fetchHistory();
-    }
-  }, [session]);
-
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       const [participationsRes, winsRes] = await Promise.all([
         fetch(`/api/users/${session?.user?.id}/participations`),
@@ -60,11 +54,18 @@ export default function HistoryPage() {
         setWins(winsData.wins || []);
       }
     } catch (error) {
-      toast.error("Error al cargar historial");
+      console.error("Error al cargar historial:", error);
+      toast.error("Error al cargar el historial");
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchHistory();
+    }
+  }, [session?.user?.id, fetchHistory]);
 
   if (loading) {
     return (
@@ -75,7 +76,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div>
+    <div className="max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Mi Historial</h1>
         <p className="text-gray-600">Revisa tus participaciones y premios ganados</p>

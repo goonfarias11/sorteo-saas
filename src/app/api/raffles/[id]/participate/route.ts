@@ -6,9 +6,10 @@ import { prisma } from "@/lib/prisma";
 // POST - Participar en sorteo
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+      const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -23,7 +24,7 @@ export async function POST(
 
     // Obtener el sorteo
     const raffle = await prisma.raffle.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -79,10 +80,10 @@ export async function POST(
     // Verificar si ya participó
     const existingParticipation = await prisma.participant.findUnique({
       where: {
-        userId_raffleId: {
-          userId: session.user.id,
-          raffleId: params.id,
-        },
+          userId_raffleId: {
+            userId: session.user.id,
+            raffleId: id,
+          },
       },
     });
 
@@ -97,7 +98,7 @@ export async function POST(
     const participant = await prisma.participant.create({
       data: {
         userId: session.user.id,
-        raffleId: params.id,
+        raffleId: id,
       },
     });
 

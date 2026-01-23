@@ -78,9 +78,18 @@ export async function POST(request: NextRequest) {
 
     const raffle = await prisma.raffle.create({
       data: {
-        ...data,
+        title: data.title,
+        description: data.description,
+        prize: data.prize,
+        imageUrl: data.imageUrl,
+        type: data.type,
+        price: data.price,
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
+        maxParticipants: data.maxParticipants,
+        isPrivate: data.isPrivate,
+        accessCode: data.isPrivate ? data.accessCode : null,
+        numWinners: data.numWinners,
         status: "DRAFT",
       },
     });
