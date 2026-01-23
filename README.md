@@ -194,6 +194,17 @@ vercel
 # Configurar variables de entorno en Vercel Dashboard
 ```
 
+#### Redeploy rápido
+Si ya está conectado a GitHub, cada `git push` a `main` dispara un build. Para forzar un redeploy manual del último commit:
+
+```bash
+vercel pull --yes --environment=production
+vercel build
+vercel deploy --prebuilt
+```
+
+Último redeploy solicitado: 2026-01-23 20:06 UTC.
+
 ### Docker
 
 ```bash
