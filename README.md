@@ -7,18 +7,33 @@ trabajo en el navegador.
 ## Que permite hacer
 
 - Crear un sorteo con nombre y premio.
+- Pegar un link de Instagram o TikTok para identificar el origen.
 - Pegar participantes por linea o separados por coma.
+- Importar comentarios desde archivos `.txt` o `.csv`.
 - Eliminar duplicados automaticamente.
 - Definir cantidad de ganadores.
 - Ejecutar un sorteo aleatorio.
 - Copiar, compartir o exportar los ganadores a CSV.
+
+## Importacion desde redes
+
+La app detecta links de Instagram y TikTok, pero la lectura automatica de
+comentarios requiere integrar APIs oficiales con autenticacion.
+
+- Instagram requiere integracion con Meta/Instagram API para acceder a
+  comentarios de publicaciones autorizadas.
+- TikTok ofrece acceso a comentarios mediante Research API, con aprobacion y
+  token.
+
+Por eso esta version deja el flujo preparado y ofrece un camino inmediato:
+pegar comentarios manualmente o importar una exportacion `.txt/.csv`.
 
 ## Arquitectura simplificada
 
 ```text
 index.html        # Estructura de la app
 styles.css        # Interfaz responsive
-app.js            # Parser, sorteo, localStorage, CSV y compartir
+app.js            # Parser, importacion, sorteo, localStorage, CSV y compartir
 server.mjs        # Servidor local opcional
 scripts/check.mjs # Chequeo basico
 ```

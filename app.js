@@ -3,11 +3,16 @@ const STORAGE_KEY = "sorteador-social:v1";
 const form = document.querySelector("#raffleForm");
 const titleInput = document.querySelector("#title");
 const prizeInput = document.querySelector("#prize");
+const postUrlInput = document.querySelector("#postUrl");
 const participantsInput = document.querySelector("#participants");
 const winnersInput = document.querySelector("#winnersCount");
 const participantsCount = document.querySelector("#participantsCount");
 const winnersTotal = document.querySelector("#winnersTotal");
+const sourceLabel = document.querySelector("#sourceLabel");
 const message = document.querySelector("#message");
+const importButton = document.querySelector("#importButton");
+const importStatus = document.querySelector("#importStatus");
+const fileInput = document.querySelector("#fileInput");
 const resetButton = document.querySelector("#resetButton");
 const emptyResult = document.querySelector("#emptyResult");
 const resultContent = document.querySelector("#resultContent");
@@ -47,22 +52,51 @@ form.addEventListener("submit", (event) => {
   }
 });
 
-[titleInput, prizeInput, participantsInput, winnersInput].forEach((field) => {
+[titleInput, prizeInput, postUrlInput, participantsInput, winnersInput].forEach((field) => {
   field.addEventListener("input", () => {
     updateCounters();
+    updateImportStatus();
     saveState();
   });
+});
+
+importButton.addEventListener("click", () => {
+  const source = detectSource(postUrlInput.value);
+
+  if (source === "unknown") {
+    showMessage("Pega un link valido de Instagram o TikTok.");
+    return;
+  }
+
+  showMessage(
+    `Detecte una publicacion de ${source}. Para traer comentarios automaticamente hace falta conectar la API oficial con autenticacion. Mientras tanto, pega la exportacion de comentarios o importa un .csv/.txt.`,
+  );
+});
+
+fileInput.addEventListener("change", async () => {
+  const file = fileInput.files?.[0];
+
+  if (!file) return;
+
+  const text = await file.text();
+  participantsInput.value = mergeParticipants(participantsInput.value, text);
+  fileInput.value = "";
+  updateCounters();
+  saveState();
+  showMessage("Archivo importado. Revise la lista antes de ejecutar el sorteo.");
 });
 
 resetButton.addEventListener("click", () => {
   titleInput.value = "";
   prizeInput.value = "";
+  postUrlInput.value = "";
   participantsInput.value = "";
   winnersInput.value = "1";
   currentResult = null;
   localStorage.removeItem(STORAGE_KEY);
   clearMessage();
   updateCounters();
+  updateImportStatus();
   renderResult();
 });
 
@@ -115,8 +149,9 @@ function parseParticipants(value) {
   const seen = new Set();
 
   return value
-    .split(/\r?\n|,/)
-    .map((item) => item.trim())
+    .split(/\r?\n/)
+    .flatMap((line) => line.split(line.includes("@") ? /\s*,\s*/ : /\t|;/))
+    .map(extractParticipantName)
     .filter(Boolean)
     .filter((item) => {
       const key = item.toLocaleLowerCase("es");
@@ -128,6 +163,23 @@ function parseParticipants(value) {
       seen.add(key);
       return true;
     });
+}
+
+function extractParticipantName(value) {
+  const item = value.trim();
+
+  if (!item) return "";
+
+  const handle = item.match(/@[\w.]{2,30}/);
+
+  if (handle) {
+    return handle[0];
+  }
+
+  return item
+    .split(/[:,]/)[0]
+    .replace(/^"|"$/g, "")
+    .trim();
 }
 
 function runRaffle(input) {
@@ -194,7 +246,19 @@ function updateCounters() {
 
   participantsCount.textContent = String(participants.length);
   winnersTotal.textContent = String(winners);
+  sourceLabel.textContent = sourceName(detectSource(postUrlInput.value));
   winnersInput.max = String(Math.max(participants.length, 1));
+}
+
+function updateImportStatus() {
+  const source = detectSource(postUrlInput.value);
+
+  if (source === "unknown") {
+    importStatus.textContent = "Podes pegar comentarios abajo o importar un archivo .txt/.csv.";
+    return;
+  }
+
+  importStatus.textContent = `Link detectado: ${sourceName(source)}. La importacion automatica requiere API oficial.`;
 }
 
 function renderResult() {
@@ -241,6 +305,7 @@ function saveState() {
   const state = {
     title: titleInput.value,
     prize: prizeInput.value,
+    postUrl: postUrlInput.value,
     winnersCount: Number(winnersInput.value) || 1,
     participantsText: participantsInput.value,
     result: currentResult,
@@ -260,12 +325,38 @@ function loadState() {
     const state = JSON.parse(saved);
     titleInput.value = state.title || "";
     prizeInput.value = state.prize || "";
+    postUrlInput.value = state.postUrl || "";
     winnersInput.value = String(state.winnersCount || 1);
     participantsInput.value = state.participantsText || "";
     currentResult = state.result || null;
   } catch {
     localStorage.removeItem(STORAGE_KEY);
   }
+}
+
+function detectSource(value) {
+  const url = value.trim().toLowerCase();
+
+  if (!url) return "manual";
+  if (url.includes("instagram.com/")) return "instagram";
+  if (url.includes("tiktok.com/")) return "tiktok";
+
+  return "unknown";
+}
+
+function sourceName(source) {
+  const names = {
+    instagram: "Instagram",
+    tiktok: "TikTok",
+    manual: "Manual",
+    unknown: "Sin detectar",
+  };
+
+  return names[source] || names.unknown;
+}
+
+function mergeParticipants(current, incoming) {
+  return parseParticipants(`${current}\n${incoming}`).join("\n");
 }
 
 function showMessage(value) {
