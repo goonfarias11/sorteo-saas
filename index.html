@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sorteador Social</title>
+    <meta
+      name="description"
+      content="Aplicacion simple para crear sorteos de redes sociales y elegir ganadores."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">#</div>
+          <div>
+            <h1>Sorteador Social</h1>
+            <p>Sorteos claros para redes sociales.</p>
+          </div>
+        </div>
+        <button class="button button-muted" type="button" id="resetButton">Nuevo sorteo</button>
+      </header>
+
+      <section class="workspace">
+        <form class="panel" id="raffleForm">
+          <div class="panel-title">
+            <span aria-hidden="true">+</span>
+            <h2>Datos del sorteo</h2>
+          </div>
+
+          <div class="fields-grid">
+            <label>
+              <span>Nombre del sorteo</span>
+              <input id="title" name="title" placeholder="Ej: Sorteo 10k seguidores" />
+            </label>
+
+            <label>
+              <span>Premio</span>
+              <input id="prize" name="prize" placeholder="Ej: Gift card de $50.000" />
+            </label>
+          </div>
+
+          <label class="participants-field">
+            <span>Participantes</span>
+            <textarea
+              id="participants"
+              name="participants"
+              placeholder="@ana&#10;@bruno&#10;@carla"
+            ></textarea>
+          </label>
+
+          <div class="run-row">
+            <label>
+              <span>Ganadores</span>
+              <input id="winnersCount" name="winnersCount" type="number" min="1" value="1" />
+            </label>
+
+            <button class="button button-primary" type="submit">Ejecutar sorteo</button>
+          </div>
+
+          <p class="message" id="message" role="status"></p>
+        </form>
+
+        <aside class="sidebar">
+          <div class="stats">
+            <div class="stat">
+              <span>Participantes</span>
+              <strong id="participantsCount">0</strong>
+            </div>
+            <div class="stat">
+              <span>Ganadores</span>
+              <strong id="winnersTotal">1</strong>
+            </div>
+          </div>
+
+          <section class="panel result-panel">
+            <div class="result-heading">
+              <h2>Resultado</h2>
+              <span class="badge" id="finishedBadge" hidden>Finalizado</span>
+            </div>
+
+            <div class="empty-result" id="emptyResult">
+              Los ganadores van a aparecer aca despues de ejecutar el sorteo.
+            </div>
+
+            <div class="result-content" id="resultContent" hidden>
+              <div class="prize-summary">
+                <span id="resultTitle"></span>
+                <strong id="resultPrize"></strong>
+              </div>
+
+              <ol class="winners-list" id="winnersList"></ol>
+
+              <div class="actions">
+                <button class="button button-muted" type="button" id="copyButton">Copiar</button>
+                <button class="button button-muted" type="button" id="csvButton">CSV</button>
+                <button class="button button-muted" type="button" id="shareButton">Compartir</button>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
