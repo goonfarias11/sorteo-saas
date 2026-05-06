@@ -1,34 +1,58 @@
-import { createServer } from "node:http";
-import { createReadStream, existsSync } from "node:fs";
-import { extname, join, normalize } from "node:path";
+import express from 'express';
+import cors from 'cors';
+import { spawn } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-const port = Number(process.env.PORT || 3000);
-const root = process.cwd();
+const app = express();
+const port = process.env.PORT || 3000;
 
-const types = {
-  ".html": "text/html; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-};
+app.use(cors());
+app.use(express.json());
+app.use(express.static(process.cwd()));
 
-const server = createServer((request, response) => {
-  const url = new URL(request.url || "/", `http://${request.headers.host}`);
-  const requested = url.pathname === "/" ? "/index.html" : url.pathname;
-  const safePath = normalize(decodeURIComponent(requested)).replace(/^(\.\.[/\\])+/, "");
-  const filePath = join(root, safePath);
+app.post('/api/import-instagram', async (req, res) => {
+  const { url } = req.body;
 
-  if (!filePath.startsWith(root) || !existsSync(filePath)) {
-    response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
-    response.end("No encontrado");
-    return;
+  if (!url) {
+    return res.status(400).json({ error: 'URL requerida' });
   }
 
-  response.writeHead(200, {
-    "content-type": types[extname(filePath)] || "application/octet-stream",
+  if (!process.env.IG_USERNAME || !process.env.IG_PASSWORD) {
+    return res.status(500).json({ error: 'Faltan credenciales IG_USERNAME e IG_PASSWORD' });
+  }
+
+  const py = spawn('python3', [
+    join(process.cwd(), 'instagram_fetcher.py'),
+    url,
+    process.env.IG_USERNAME,
+    process.env.IG_PASSWORD,
+  ]);
+
+  let data = '';
+  let err = '';
+
+  py.stdout.on('data', chunk => data += chunk.toString());
+  py.stderr.on('data', chunk => err += chunk.toString());
+
+  py.on('close', code => {
+    if (code !== 0) {
+      return res.status(500).json({ error: err || 'Error importando comentarios' });
+    }
+
+    try {
+      const participants = JSON.parse(data);
+      res.json({ participants, count: participants.length });
+    } catch {
+      res.status(500).json({ error: 'Respuesta inválida de Instagram' });
+    }
   });
-  createReadStream(filePath).pipe(response);
 });
 
-server.listen(port, () => {
-  console.log(`Sorteador Social listo en http://localhost:${port}`);
+app.get('*', (_, res) => {
+  res.send(readFileSync(join(process.cwd(), 'index.html'), 'utf8'));
+});
+
+app.listen(port, () => {
+  console.log(`Servidor listo en http://localhost:${port}`);
 });

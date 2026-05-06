@@ -60,17 +60,41 @@ form.addEventListener("submit", (event) => {
   });
 });
 
-importButton.addEventListener("click", () => {
+importButton.addEventListener("click", async () => {
   const source = detectSource(postUrlInput.value);
 
-  if (source === "unknown") {
-    showMessage("Pega un link valido de Instagram o TikTok.");
+  if (source !== "instagram") {
+    showMessage("Actualmente solo Instagram esta soportado.");
     return;
   }
 
-  showMessage(
-    `Detecte una publicacion de ${source}. Para traer comentarios automaticamente hace falta conectar la API oficial con autenticacion. Mientras tanto, pega la exportacion de comentarios o importa un .csv/.txt.`,
-  );
+  showMessage("Importando comentarios...");
+
+  try {
+    const response = await fetch("/api/import-instagram", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url: postUrlInput.value,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "No se pudieron importar comentarios.");
+    }
+
+    participantsInput.value = data.participants.join("
+");
+    updateCounters();
+    saveState();
+    showMessage(`Se importaron ${data.count} participantes unicos.`);
+  } catch (error) {
+    showMessage(error.message);
+  }
 });
 
 fileInput.addEventListener("change", async () => {
