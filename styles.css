@@ -488,3 +488,11 @@ textarea:focus {
     padding: 16px;
   }
 }
+
+
+.history-panel{margin-top:20px}
+.history-list{display:flex;flex-direction:column;gap:12px}
+.history-item{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.03)}
+.history-item strong{display:block}
+.history-item span,.history-item small{display:block;opacity:.7;margin-top:4px}
+.history-empty{opacity:.6}

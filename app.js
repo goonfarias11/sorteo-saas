@@ -381,3 +381,52 @@ function slugify(value) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
+
+
+const historyContainer = document.createElement("div");
+historyContainer.className = "panel history-panel";
+historyContainer.innerHTML = `
+<div class="panel-title"><span>🕘</span><h2>Historial</h2></div>
+<div id="historyList" class="history-list"></div>`;
+document.querySelector(".sidebar").appendChild(historyContainer);
+const historyList = document.querySelector("#historyList");
+
+function getHistory(){
+  return JSON.parse(localStorage.getItem("raffle-history") || "[]");
+}
+
+function saveHistory(item){
+  const history = getHistory();
+  history.unshift(item);
+  localStorage.setItem("raffle-history", JSON.stringify(history.slice(0,10)));
+}
+
+function renderHistory(){
+  const history = getHistory();
+  if(!history.length){
+    historyList.innerHTML = '<p class="history-empty">Todavia no hay sorteos.</p>';
+    return;
+  }
+
+  historyList.innerHTML = history.map(item => `
+    <article class="history-item">
+      <strong>${item.title}</strong>
+      <span>${item.prize}</span>
+      <small>${item.winners.join(", ")}</small>
+    </article>
+  `).join("");
+}
+
+const originalRun = runRaffle;
+runRaffle = function(input){
+ const result = originalRun(input);
+ saveHistory({
+  title: input.title,
+  prize: input.prize,
+  winners: result.winners.map(w=>w.name)
+ });
+ setTimeout(renderHistory,0);
+ return result;
+}
+
+renderHistory();
